@@ -1,0 +1,25 @@
+IF ($A_DBB[902]==0)  AND  ($A_DBB[903]==0)
+L280
+;網請280瘍最唗
+ELSE
+ENDIF
+
+IF (($A_DBB[903]==1)  AND  ($A_DBB[902]==0)) 
+L480
+;網請480瘍最唗
+ELSE
+ENDIF
+
+IF ($A_DBB[903]==0)  AND ( $A_DBB[902]==1)
+L680
+;網請680瘍最唗
+ELSE
+ENDIF
+
+IF ($A_DBB[902]==1)  AND  ($A_DBB[903]==1)
+L880
+;網請880瘍最唗
+ELSE
+
+ENDIF
+M30

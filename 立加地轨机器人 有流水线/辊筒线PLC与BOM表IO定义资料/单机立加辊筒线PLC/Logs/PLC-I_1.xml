@@ -1,0 +1,7 @@
+<?xml version="1.0" standalone="no"?>
+<?xml-stylesheet type='text/xsl' href='MassDataHandlerLogFile.xsl'?>
+<LogFile titleName="PLC-I_1.xml" projectName="C:\Users\liuqixiang.TJEWPT040100085.000\Desktop\PLC-I.xlsx" typeText="类型" messageText="消息" timeText="时间">
+  <LogEntry type="Error" dateTime="14:30:46">
+    <Message>装载文件 C:\Users\liuqixiang.TJEWPT040100085.000\Desktop\PLC-I.xlsx 时出错，该文件可能正在使用或为只读文件。</Message>
+  </LogEntry>
+</LogFile>

@@ -1,0 +1,10 @@
+<?xml version="1.0" standalone="no"?>
+<?xml-stylesheet type='text/xsl' href='MassDataHandlerLogFile.xsl'?>
+<LogFile titleName="PLC-I.xml" projectName="C:\Users\liuqixiang.TJEWPT040100085.000\Desktop\PLC-I.xlsx" typeText="类型" messageText="消息" timeText="时间">
+  <LogEntry type="Warning" dateTime="14:29:06">
+    <Message>版本ID在XLSX 文档中丢失。它被假定为最后一个版本。</Message>
+  </LogEntry>
+  <LogEntry type="Warning" dateTime="14:29:06">
+    <Message>将忽略工作表 "PLC Tags" 中的行 2，这是因为创建变量的信息不足。</Message>
+  </LogEntry>
+</LogFile>

@@ -1,0 +1,211 @@
+﻿;---------------------------------------
+ ; Version:          V01
+ ; last change:      2020.07.17
+ ; AUTOR:            LINGYI HDG
+; CUSTOMER:          TIANJI
+;---------------------------------------
+
+;***********Define variables************
+N10 PROC L6 SAVE SBLOF DISPLOF 
+N20 DEF INT T_SP,T_NEW,T_MODE,T_LD1_EXIST,T_SP_EXIST,NUM_CHA,P_NEW
+N30 DEF REAL X_CHAN,Y_PREP,X_PREP,Y_CHAN,Y_SLOW,Z_PREP,Z_INTM,Z_CHAN,Z_SLOW,SP_POS,A_POS
+
+N50 GETSELT(T_NEW)
+
+;--------------------------------------------------------------
+IF($MC_CHAN_NAME=="CHAN1")
+N40 T_SP=$TC_MPP6[9998,1]
+N70 X_PREP=$MN_USER_DATA_FLOAT[0]	 ; X: MD14514[1] is prepare position 
+N60 X_CHAN=$MN_USER_DATA_FLOAT[1]	; X: MD14514[0] is tool change position
+N80 Y_PREP=$MN_USER_DATA_FLOAT[2]	 ; Y: MD14514[2] is prepare position
+N90 Y_CHAN=$MN_USER_DATA_FLOAT[3]	; Y: MD14514[3] is tool change position
+N110 Z_PREP=$MN_USER_DATA_FLOAT[4]	; Z: MD14514[4] is prepare position 
+N120 Z_INTM=$MN_USER_DATA_FLOAT[5]	; Z: MD14514[6] is intermediate position
+N130 Z_CHAN=$MN_USER_DATA_FLOAT[6]	; Z: MD14514[7] is tool change position
+N150 SP_POS=$MN_USER_DATA_FLOAT[7]	; SP:MD14514[7] is tool change position 
+N160 A_POS=$MN_USER_DATA_FLOAT[8]	; A: MD14514[8] is tool change position 
+;N170 T_LD1_EXIST=$A_DBW[800] 		; LoadPos1, 1 = tool exist; 0 = no tool
+;N180 T_SP_EXIST=$A_DBW[802]		; Spindle,  1 = tool exist; 0 = no tool
+NUM_CHA=1
+ENDIF
+;------------------------------------------------------------
+IF($MC_CHAN_NAME=="CHAN2")
+N40 T_SP=$TC_MPP6[9998,2]
+N70 X_PREP=$MN_USER_DATA_FLOAT[10]	 ; X: MD14514[1] is prepare position 
+N60 X_CHAN=$MN_USER_DATA_FLOAT[11]	; X: MD14514[0] is tool change position
+N80 Y_PREP=$MN_USER_DATA_FLOAT[12]	 ; Y: MD14514[2] is prepare position
+N90 Y_CHAN=$MN_USER_DATA_FLOAT[13]	; Y: MD14514[3] is tool change position
+N110 Z_PREP=$MN_USER_DATA_FLOAT[14]	; Z: MD14514[4] is prepare position 
+N120 Z_INTM=$MN_USER_DATA_FLOAT[15]	; Z: MD14514[6] is intermediate position
+N130 Z_CHAN=$MN_USER_DATA_FLOAT[16]	; Z: MD14514[7] is tool change position
+N150 SP_POS=$MN_USER_DATA_FLOAT[17]	; SP:MD14514[7] is tool change position 
+N160 A_POS=$MN_USER_DATA_FLOAT[18]	; A: MD14514[8] is tool change position 
+NUM_CHA=2
+$A_DBW[940]=T_SP
+P_NEW=T_NEW
+ENDIF
+
+;=============================================================
+;=============================================================
+N220 STOPRE
+;***********tool change analysis******** 
+N230 IF (T_SP==T_NEW) GOTOF INFO1;Tool already on spindle 刀具在主轴上
+N240 IF ((T_SP==0) AND (T_NEW<>0)) ;T_MODE = 1: New Tool only
+;IF  (T_SP==0) GOTO _ALAMM
+N250    T_MODE=1
+N260    ELSE
+N270    ENDIF
+N280 IF ((T_SP<>0)AND(T_NEW==0)) ;T_MODE = 2: T0 only
+N290    T_MODE=2
+N300    ELSE
+N310    ENDIF
+N320 IF ((T_SP<>0)AND(T_NEW<>0)) ;T_MODE = 3: Tool Exchange
+N330    T_MODE=3
+N340    ELSE
+N350    ENDIF
+N360 STOPRE
+N370 IF ((T_MODE==2)OR(T_MODE==3)) GOTOF T_RET  ;2 = T0  3 = Tool Exchange
+N380 IF T_MODE==1 GOTOF T_NEWLOC			;1 = New Tool only
+
+;--------------------------------------------------------
+;***********Return old tool start*************
+;--------------------------------------------------------
+N400 T_RET:						;return old tool 
+N420 G64 G153 G00 G90 Z=Z_PREP		 		;Z axis prepare position
+G153X0
+G153Y0
+N430 M05						;spindle stop
+M50
+G4F0.5
+M11
+N440 POS[A]=A_POS						;A axis position
+N450 SPOS[NUM_CHA]=SP_POS						;spindle position
+
+STOPRE
+WAITS
+M80
+STOPRE
+N410 T0
+N460 G4F0.5
+N470 STOPRE
+N480 IF T_LD1_EXIST==1 GOTOF INFO2
+N490 G64 G153 G00 G90 X=X_PREP Y=Y_CHAN			;X,Y axis prepare position
+
+N500 STOPRE
+N520 G64 G153 G01 F2000 G90 Z=Z_CHAN				;Z axis tool change position
+N530 G60 G153 G01 F2000 G90 X=X_CHAN			;X axis tool change position
+N540 M81						;Unclamp tool
+G4F2
+N550 M206
+N560 D0 
+STOPRE
+;********Return old tool finished**********
+N570 G4 F0.5
+N580 G64 G153 G01 F5000 G90 Z=Z_INTM			;Z axis intermediate position
+N590 IF T_MODE==3 GOTOF T_GET				;Get new tool
+N600 M82						;Clamp tool
+G4F0.5
+N610 G64 G153 G01 G90 F2000  X=X_PREP				;X axis prepare position
+N620 G64 G153 G00 G90 Z=Z_PREP				;Z axis prepare position
+
+N630 GOTOF END
+
+;***********Get New tool start*************
+N640 T_NEWLOC:						;new tool only
+N660 G64 G153 G00 G90 Z=Z_PREP			    	;Z axis prepare  position
+G153X0
+G153Y0
+
+IF NUM_CHA==2
+$A_DBW[940]=P_NEW
+G4F0.2
+ELSE
+ENDIF
+STOPRE
+N670 M05						;spindle stop
+G4F0.5
+M11
+N680 POS[A]=A_POS						;A axis position
+N690 SPOS[NUM_CHA]=SP_POS						;spindle position
+G4F0.5
+N700 STOPRE
+WAITS
+N650 M80						;MAG rotate command
+STOPRE
+N710 IF ((T_SP_EXIST==1)AND(T_LD1_EXIST==1)) GOTOF INFO3
+N720 G4F0.3
+N730 STOPRE
+N760 G4F0.5
+N770 G64 G153 G00 G90 Y=Y_CHAN  X=X_CHAN				;X Y axis tool change position
+N740 G64 G153 G0 G90  Z=Z_INTM			;Z axis change  intermediate position
+N780 M81						;Unclamp tool
+G4F0.5
+N790 GOTOF T_GO_ON					;go on to get tool
+N800 T_GET:						;get new tool 
+IF NUM_CHA==1  
+T=$TC_TP2[T_NEW]
+GOTO _PPROM
+ELSE
+T=P_NEW
+$A_DBW[940]=P_NEW
+R20=P_NEW
+_PPROM:
+ENDIF
+G4F0.2
+STOPRE
+N820 M80 						;MAG rotate command
+N830 G4F0.3
+N840 STOPRE
+N850 T_GO_ON:						;go on to get tool
+G4F0.5
+STOPRE
+N740 G64 G153 G01 G90 F2000 Z=Z_CHAN			;Z axis change position
+N880 M82						;Clamp tool
+G4F0.5
+N870 G60 G153 G01 F2000 G90 X=X_PREP			;X axis tool prep position
+N890 M206
+N900 G4 F0.5						
+N910 D1
+
+;**********Get New tool finished***********
+N930 G64 G153 G00 G90 Z=Z_PREP   			;Z axis prepare position
+G153 X0
+G153Y0
+N950 SETPIECE(1)					;tool life monitor
+
+;*****************M6 END*******************
+N960 END:
+M20
+G4F1
+
+;RELEASE(A1)
+N970 M17
+N980 STOPRE
+N990 INFO1:MSG("**** 无换刀动作  原因：编程刀具号 = 主轴刀具号 ****")
+N1000 G04F2
+M20
+G4F1
+N1010 M17
+N1020 INFO2:MSG("**** 无换刀动作  原因：装载点1检测到异常刀具 ****")
+LOOP
+N1030 G04F2
+ENDLOOP
+M20
+G4F1
+N1040 M17
+N1050 INFO3:MSG("**** 无换刀动作  原因：主轴检测到异常刀具 ****")
+LOOP
+N1060 G04F2
+ENDLOOP
+M20
+G4F1
+N1070 M17
+_ALAMM:
+LOOP
+MSG("TT==0")
+G4F2
+ENDLOOP
+M17
+
+
+

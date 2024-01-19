@@ -1,0 +1,10 @@
+<?xml version="1.0" standalone="no"?>
+<?xml-stylesheet type='text/xsl' href='MassDataHandlerLogFile.xsl'?>
+<LogFile titleName="baojing1 Log_1.xml" projectName="C:\Users\Administrator\Desktop\baojing1.xlsx" typeText="类型" messageText="消息" timeText="时间">
+  <LogEntry type="Warning" dateTime="17:08:38">
+    <Message>未在 XLSX 文件中指定版本。导入采用了最新版本。</Message>
+  </LogEntry>
+  <LogEntry type="Information" dateTime="17:08:38">
+    <Message>完成导入： 32 个离散量报警; 0 个模拟量报警</Message>
+  </LogEntry>
+</LogFile>
